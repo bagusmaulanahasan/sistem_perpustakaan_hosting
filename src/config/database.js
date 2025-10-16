@@ -20,4 +20,13 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error("❌ Koneksi MySQL gagal:", err.message);
+    } else {
+        console.log("✅ Koneksi MySQL berhasil");
+        connection.release();
+    }
+});
+
 module.exports = pool;
