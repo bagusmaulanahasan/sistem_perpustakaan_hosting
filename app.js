@@ -59,6 +59,10 @@ app.get("/books", (req, res) => {
 
 app.use("/member", memberRoutes);
 
-app.listen(PORT, () => {
+// app.listen(PORT, () => {
+//     console.log(`Server berjalan di http://localhost:${PORT}`);
+// });
+
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server berjalan di http://localhost:${PORT}`);
 });
