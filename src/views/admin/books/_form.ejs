@@ -20,7 +20,7 @@
         </div>
         <div class="mb-4">
             <label for="stock" class="block text-sm font-medium text-gray-700">Stok <span class="text-red-500">*</span></label>
-            <input type="number" name="stock" id="stock" value="<%= book ? book.stock : '0' %>" required class="input-field">
+            <input type="number" name="stock" id="stock" value="<%= book ? book.stock : '0' %>" required class="input-field" min="1">
         </div>
         <div class="mb-4">
             <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori <span class="text-red-500">*</span></label>
