@@ -5,6 +5,8 @@ const puppeteer = require("puppeteer");
 const Book = require("../models/bookModel");
 const Category = require("../models/categoryModel");
 
+const { validationResult } = require("express-validator"); // <-- TAMBAHKAN BARIS INI
+
 exports.listBooks = async (req, res) => {
     try {
         const searchTerm = req.query.search || "";
@@ -32,6 +34,7 @@ exports.getCreatePage = async (req, res) => {
             title: "Tambah Buku Baru",
             book: null,
             error: null,
+            errors: [], // Tambahkan ini
         });
     } catch (error) {
         console.error(error);
@@ -40,28 +43,38 @@ exports.getCreatePage = async (req, res) => {
 };
 
 exports.postCreateBook = async (req, res) => {
+    // 1. Cek hasil validasi DULU
+    const validationErrors = validationResult(req);
+    const bookData = { ...req.body }; // Ambil data untuk di-render ulang
+
+    // Gabungkan error validasi file (jika ada) dengan error validasi form
+    let allErrors = validationErrors.array();
+    if (req.fileValidationError) {
+        allErrors.push({ msg: req.fileValidationError });
+    }
+
+    // 2. Jika ada error (dari form ATAU file), render ulang halaman
+    if (allErrors.length > 0) {
+        try {
+            const categories = await Category.findAll();
+            return res.status(422).render("admin/books/create", {
+                title: "Tambah Buku Baru",
+                categories,
+                book: bookData, // Kirim data lama kembali
+                error: allErrors[0].msg, // Pesan error lama (opsional)
+                errors: allErrors, // Kirim semua error
+            });
+        } catch (catError) {
+            // Handle error jika gagal fetch categories
+            return res.status(500).send("Terjadi kesalahan server saat validasi.");
+        }
+    }
+
+    // 3. Hapus validasi manual (sudah tidak perlu)
+    // if (!bookData.title || !bookData.author) { ... }
+
+    // --- Logika Anda jika validasi lolos ---
     try {
-        if (req.fileValidationError) {
-            const categories = await Category.findAll();
-            return res.render("admin/books/create", {
-                title: "Tambah Buku Baru",
-                categories,
-                book: req.body,
-                error: req.fileValidationError,
-            });
-        }
-
-        const bookData = { ...req.body };
-
-        if (!bookData.title || !bookData.author) {
-            const categories = await Category.findAll();
-            return res.render("admin/books/create", {
-                title: "Tambah Buku Baru",
-                categories,
-                book: bookData,
-                error: "Judul dan Penulis tidak boleh kosong!",
-            });
-        }
         if (bookData.category_id === "") {
             bookData.category_id = null;
         }
@@ -80,12 +93,14 @@ exports.postCreateBook = async (req, res) => {
         res.render("admin/books/create", {
             title: "Tambah Buku Baru",
             categories,
-            book: req.body,
+            book: bookData, // Kirim data lama
             error: "Gagal menyimpan buku. Cek terminal untuk detail.",
+            errors: [], // Kirim array kosong
         });
     }
 };
 
+// ... (exports.getEditPage tetap sama) ...
 exports.getEditPage = async (req, res) => {
     try {
         const book = await Book.findById(req.params.id);
@@ -98,6 +113,7 @@ exports.getEditPage = async (req, res) => {
             categories,
             title: "Edit Buku",
             error: null,
+            errors: [], // Tambahkan ini
         });
     } catch (error) {
         console.error(error);
@@ -107,18 +123,36 @@ exports.getEditPage = async (req, res) => {
 
 exports.postUpdateBook = async (req, res) => {
     const { id } = req.params;
-    try {
-        if (req.fileValidationError) {
-            const book = await Book.findById(id);
+
+    // 1. Cek hasil validasi DULU
+    const validationErrors = validationResult(req);
+    
+    // Gabungkan error validasi file (jika ada) dengan error validasi form
+    let allErrors = validationErrors.array();
+    if (req.fileValidationError) {
+        allErrors.push({ msg: req.fileValidationError });
+    }
+
+    // 2. Jika ada error (dari form ATAU file), render ulang halaman edit
+    if (allErrors.length > 0) {
+        try {
+            // Kita perlu data buku dan kategori untuk me-render ulang
+            const book = await Book.findById(id); 
             const categories = await Category.findAll();
-            return res.render("admin/books/edit", {
+            return res.status(422).render("admin/books/edit", {
                 title: "Edit Buku",
                 categories,
-                book,
-                error: req.fileValidationError,
+                book: { ...book, ...req.body }, // Tampilkan data baru yang gagal
+                error: allErrors[0].msg, // Pesan error lama
+                errors: allErrors, // Kirim semua error
             });
+        } catch (renderError) {
+            return res.status(500).send("Terjadi kesalahan server saat validasi update.");
         }
+    }
 
+    // --- Logika Anda jika validasi lolos ---
+    try {
         const existingBook = await Book.findById(id);
         if (!existingBook) {
             return res.status(404).send("Buku tidak ditemukan untuk diupdate");
@@ -138,7 +172,7 @@ exports.postUpdateBook = async (req, res) => {
                 existingBook.cover_image_url !== "/uploads/covers/default.jpg"
             ) {
                 const oldImagePath = path.join(
-                    __dirname,
+                    __dirname, // Pastikan __dirname terdefinisi
                     "../../public",
                     existingBook.cover_image_url
                 );
@@ -159,6 +193,7 @@ exports.postUpdateBook = async (req, res) => {
             categories: categories,
             book: bookForRender,
             error: "Gagal mengupdate buku. Cek terminal untuk detail.",
+            errors: [],
         });
     }
 };
