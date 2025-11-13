@@ -3,6 +3,9 @@ const router = express.Router();
 const memberController = require("../controllers/memberController");
 const { isLoggedIn, isAnggota } = require("../middleware/authMiddleware");
 
+// 1. Import aturan validasi yang BARU
+const { updateProfileRules, changePasswordRules } = require('../middleware/validationRules');
+
 router.get("/katalog", isLoggedIn, memberController.showCatalog);
 router.get("/buku/:id", isLoggedIn, memberController.showBookDetail);
 
@@ -39,12 +42,14 @@ router.post(
     "/profil/update",
     isLoggedIn,
     isAnggota,
+    updateProfileRules,
     memberController.updateProfile
 );
 router.post(
     "/profil/change-password",
     isLoggedIn,
     isAnggota,
+    changePasswordRules,
     memberController.changePassword
 );
 

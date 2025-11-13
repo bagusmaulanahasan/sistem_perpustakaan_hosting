@@ -10,6 +10,8 @@ const db = require("../config/database");
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 
+const { validationResult } = require("express-validator"); // <-- IMPORT INI
+
 exports.showCatalog = async (req, res) => {
     try {
         const searchTerm = req.query.search || "";
@@ -201,14 +203,21 @@ exports.getProfilePage = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
+    // 1. Cek hasil validasi dari middleware
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Jika ada error, redirect kembali dengan pesan error pertama
+        return res.redirect(
+            `/profil?error=${errors.array()[0].msg}`
+        );
+    }
+
+    // 2. Validasi manual sudah tidak diperlukan
     const { id } = req.session.user;
     const { username, email } = req.body;
 
-    if (!username || !email) {
-        return res.redirect(
-            "/profil?error=Username dan Email tidak boleh kosong"
-        );
-    }
+    // HAPUS INI:
+    // if (!username || !email) { ... }
 
     try {
         await User.updateProfile(id, username, email);
@@ -220,6 +229,8 @@ exports.updateProfile = async (req, res) => {
     } catch (error) {
         console.error(error);
 
+        // Validator custom kita SEHARUSNYA sudah menangani ini,
+        // tapi ini adalah failsafe yang bagus jika terjadi race condition di DB.
         if (error.code === "ER_DUP_ENTRY") {
             return res.redirect(
                 "/profil?error=Email sudah digunakan oleh akun lain"
@@ -230,31 +241,36 @@ exports.updateProfile = async (req, res) => {
 };
 
 exports.changePassword = async (req, res) => {
+    // 1. Cek hasil validasi dari middleware
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Jika ada error, redirect kembali dengan pesan error pertama
+        return res.redirect(
+            `/profil?error=${errors.array()[0].msg}`
+        );
+    }
+    
+    // 2. Validasi manual sudah tidak diperlukan
     const { id } = req.session.user;
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (newPassword !== confirmPassword) {
-        return res.redirect(
-            "/profil?error=Password baru tidak cocok dengan konfirmasi"
-        );
-    }
-    if (newPassword.length < 6) {
-        return res.redirect(
-            "/profil?error=Password baru minimal harus 6 karakter"
-        );
-    }
+    // HAPUS INI:
+    // if (newPassword !== confirmPassword) { ... }
+    // if (newPassword.length < 6) { ... }
 
     try {
         const user = await User.findById(id);
         if (!user) {
             return res.redirect("/login");
         }
-
+        
+        // 3. Logika bisnis ini TETAP DIPERLUKAN
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.redirect("/profil?error=Password saat ini salah");
         }
 
+        // Lanjutkan jika lolos
         const hashedPassword = await bcrypt.hash(newPassword, 12);
         await User.updatePassword(id, hashedPassword);
 
