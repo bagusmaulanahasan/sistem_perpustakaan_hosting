@@ -1,6 +1,23 @@
 const db = require("../config/database");
 
 const Book = {
+
+    // TAMBAHKAN FUNGSI INI:
+    // Fungsi untuk mencari buku berdasarkan judul
+    // Parameter excludeId opsional: digunakan saat Update agar tidak mendeteksi diri sendiri sebagai duplikat
+    findByTitle: async (title, excludeId = null) => {
+        let query = "SELECT id FROM books WHERE title = ?";
+        let params = [title];
+
+        if (excludeId) {
+            query += " AND id != ?";
+            params.push(excludeId);
+        }
+
+        const [rows] = await db.execute(query, params);
+        return rows[0]; // Mengembalikan data jika ditemukan, undefined jika tidak
+    },
+    
     create: async (bookData) => {
         const {
             title,

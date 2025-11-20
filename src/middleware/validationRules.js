@@ -1,5 +1,6 @@
 const { check } = require('express-validator');
 const User = require('../models/userModel');
+const Book = require('../models/bookModel'); // <-- PERBAIKAN 1: INI WAJIB ADA
 
 // --- ATURAN DASAR (untuk dipakai ulang) ---
 // Aturan dasar untuk username (Ini sudah benar)
@@ -103,61 +104,110 @@ exports.changePasswordRules = [
 ];
 
 // --- ATURAN BARU UNTUK BUKU ---
+// exports.bookValidationRules = [
+//     // Aturan untuk Judul (Title) - Wajib
+//     check('title')
+//         .notEmpty().withMessage('Judul tidak boleh kosong.')
+//         .not().matches(/(^\s|\s$)/).withMessage('Judul tidak boleh diawali atau diakhiri spasi.')
+        
+//         // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
+//         .not().matches(/^\./).withMessage('Judul tidak boleh diawali dengan titik (.).')
+
+//         // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
+//         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Judul hanya boleh berisi huruf, angka, spasi, dan titik (.).')
+        
+//         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Judul harus mengandung minimal 2 huruf.')
+        
+//         // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
+//         .not().matches(/^[0-9. ]+$/).withMessage('Judul tidak boleh hanya berisi angka, spasi, dan titik.')
+        
+//         .trim(),
+
+//     // Aturan untuk Penulis (Author) - Wajib
+//     check('author')
+//         .notEmpty().withMessage('Penulis tidak boleh kosong.')
+//         .not().matches(/(^\s|\s$)/).withMessage('Penulis tidak boleh diawali atau diakhiri spasi.')
+
+//         // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
+//         .not().matches(/^\./).withMessage('Penulis tidak boleh diawali dengan titik (.).')
+        
+//         // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
+//         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Penulis hanya boleh berisi huruf, angka, spasi, dan titik (.).')
+        
+//         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Penulis harus mengandung minimal 2 huruf.')
+        
+//         // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
+//         .not().matches(/^[0-9. ]+$/).withMessage('Penulis tidak boleh hanya berisi angka, spasi, dan titik.')
+        
+//         .trim(),
+
+//     // Aturan untuk Penerbit (Publisher) - Opsional
+//     check('publisher')
+//         .optional({ checkFalsy: true }) // Boleh kosong atau null
+//         .not().matches(/(^\s|\s$)/).withMessage('Penerbit tidak boleh diawali atau diakhiri spasi.')
+
+//         // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
+//         .not().matches(/^\./).withMessage('Penerbit tidak boleh diawali dengan titik (.).')
+        
+//         // Hanya jalankan validasi sisa JIKA tidak kosong
+//         .if(check('publisher').notEmpty()) 
+
+//         // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
+//         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Penerbit hanya boleh berisi huruf, angka, spasi, dan titik (.).')
+        
+//         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Penerbit harus mengandung minimal 2 huruf.')
+        
+//         // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
+//         .not().matches(/^[0-9. ]+$/).withMessage('Penerbit tidak boleh hanya berisi angka, spasi, dan titik.')
+        
+//         .trim()
+// ];
+
+// --- ATURAN BARU UNTUK BUKU (UPDATED) ---
 exports.bookValidationRules = [
     // Aturan untuk Judul (Title) - Wajib
     check('title')
         .notEmpty().withMessage('Judul tidak boleh kosong.')
         .not().matches(/(^\s|\s$)/).withMessage('Judul tidak boleh diawali atau diakhiri spasi.')
         
-        // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
+        // Aturan Regex spesifik Anda (TIDAK DIHAPUS)
         .not().matches(/^\./).withMessage('Judul tidak boleh diawali dengan titik (.).')
-
-        // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Judul hanya boleh berisi huruf, angka, spasi, dan titik (.).')
-        
         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Judul harus mengandung minimal 2 huruf.')
-        
-        // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
         .not().matches(/^[0-9. ]+$/).withMessage('Judul tidak boleh hanya berisi angka, spasi, dan titik.')
         
-        .trim(),
+        .trim()
 
-    // Aturan untuk Penulis (Author) - Wajib
+        // 2. PENGECEKAN DUPLIKAT DITAMBAHKAN DI SINI
+        .custom(async (value, { req }) => {
+            // req.params.id akan ada nilainya jika ini adalah proses UPDATE/EDIT
+            // Jika CREATE, req.params.id nilainya undefined (aman)
+            const existingBook = await Book.findByTitle(value, req.params.id);
+            
+            if (existingBook) {
+                throw new Error('Judul buku sudah terdaftar dalam database. Harap gunakan judul lain.');
+            }
+            return true;
+        }),
+
+    // Aturan untuk Penulis (Author) - Wajib (TIDAK BERUBAH)
     check('author')
         .notEmpty().withMessage('Penulis tidak boleh kosong.')
         .not().matches(/(^\s|\s$)/).withMessage('Penulis tidak boleh diawali atau diakhiri spasi.')
-
-        // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
         .not().matches(/^\./).withMessage('Penulis tidak boleh diawali dengan titik (.).')
-        
-        // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Penulis hanya boleh berisi huruf, angka, spasi, dan titik (.).')
-        
         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Penulis harus mengandung minimal 2 huruf.')
-        
-        // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
         .not().matches(/^[0-9. ]+$/).withMessage('Penulis tidak boleh hanya berisi angka, spasi, dan titik.')
-        
         .trim(),
 
-    // Aturan untuk Penerbit (Publisher) - Opsional
+    // Aturan untuk Penerbit (Publisher) - Opsional (TIDAK BERUBAH)
     check('publisher')
-        .optional({ checkFalsy: true }) // Boleh kosong atau null
+        .optional({ checkFalsy: true }) 
         .not().matches(/(^\s|\s$)/).withMessage('Penerbit tidak boleh diawali atau diakhiri spasi.')
-
-        // UBAH BAGIAN INI: Tambahkan aturan untuk tidak boleh diawali titik
         .not().matches(/^\./).withMessage('Penerbit tidak boleh diawali dengan titik (.).')
-        
-        // Hanya jalankan validasi sisa JIKA tidak kosong
         .if(check('publisher').notEmpty()) 
-
-        // UBAH BAGIAN INI: Izinkan titik (.) di dalam regex whitelist
         .matches(/^[a-zA-Z0-9. ]+$/).withMessage('Penerbit hanya boleh berisi huruf, angka, spasi, dan titik (.).')
-        
         .custom(value => (value.match(/[a-zA-Z]/g) || []).length >= 2).withMessage('Penerbit harus mengandung minimal 2 huruf.')
-        
-        // UBAH BAGIAN INI: Update aturan "hanya" untuk menyertakan titik
         .not().matches(/^[0-9. ]+$/).withMessage('Penerbit tidak boleh hanya berisi angka, spasi, dan titik.')
-        
         .trim()
 ];
