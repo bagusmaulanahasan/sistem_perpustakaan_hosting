@@ -185,7 +185,7 @@ exports.bookValidationRules = [
             const existingBook = await Book.findByTitle(value, req.params.id);
             
             if (existingBook) {
-                throw new Error('Judul buku sudah terdaftar dalam database. Harap gunakan judul lain.');
+                throw new Error('Judul buku sudah terdaftar. Harap gunakan judul lain.');
             }
             return true;
         }),
