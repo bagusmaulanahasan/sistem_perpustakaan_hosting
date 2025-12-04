@@ -48,18 +48,42 @@
                     <th class="py-2 px-4 text-left">Peminjam</th>
                     <th class="py-2 px-4 text-left">Tgl Pinjam</th>
                     <th class="py-2 px-4 text-left">Batas Kembali</th>
+                    <th class="py-2 px-4 text-left">Status</th>
                     <th class="py-2 px-4 text-left">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 <% if (borrowings.length === 0) { %>
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-gray-500">
+                    <td colspan="6" class="text-center py-4 text-gray-500">
                         Tidak ada data untuk ditampilkan.
                     </td>
                 </tr>
-                <% } else { %> <% borrowings.forEach(b => { %>
-                <tr class="border-b">
+                <% } else { %> <% borrowings.forEach(b => { %> <% 
+                    const dueDate = new Date(b.due_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const diffTime = dueDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    let statusText = '';
+                    let statusColorClass = '';
+                    let rowColorClass = '';
+
+                    if (diffDays < 0) {
+                        statusText = `Terlambat ${Math.abs(diffDays)} hari`;
+                        statusColorClass = 'text-red-700 font-bold';
+                        rowColorClass = 'bg-red-50';
+                    } else if (diffDays <= 3) {
+                        statusText = `Tersisa ${diffDays} hari`;
+                        statusColorClass = 'text-yellow-700 font-bold';
+                        rowColorClass = 'bg-yellow-50';
+                    } else {
+                        statusText = `Tersisa ${diffDays} hari`;
+                        statusColorClass = 'text-green-700 font-bold';
+                    }
+                %>
+                <tr class="border-b <%= rowColorClass %>">
                     <td class="py-2 px-4 font-medium">
                         <%= b.title %><br /><span class="text-xs text-gray-500"
                             ><%= b.author %></span
@@ -77,6 +101,9 @@
                     </td>
                     <td class="py-2 px-4 font-medium text-red-600">
                         <%= new Date(b.due_date).toLocaleDateString('id-ID') %>
+                    </td>
+                    <td class="py-2 px-4 <%= statusColorClass %>">
+                        <%= statusText %>
                     </td>
                     <td class="py-2 px-4">
                         <form

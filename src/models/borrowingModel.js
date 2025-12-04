@@ -195,7 +195,8 @@ const Borrowing = {
                 u.email,
                 c.name AS category_name,
                 br.borrow_date,
-                br.return_date -- Ambil return_date, bukan due_date
+                br.return_date,
+                br.due_date
             FROM borrowings br
             JOIN users u ON br.user_id = u.id
             JOIN books b ON br.book_id = b.id

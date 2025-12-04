@@ -47,16 +47,38 @@
                     <th class="py-2 px-4 text-left">Peminjam</th>
                     <th class="py-2 px-4 text-left">Tgl Pinjam</th>
                     <th class="py-2 px-4 text-left">Tgl Kembali</th>
+                    <th class="py-2 px-4 text-left">Status</th>
                 </tr>
             </thead>
             <tbody>
                 <% if (borrowings.length === 0) { %>
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-gray-500">
+                    <td colspan="5" class="text-center py-4 text-gray-500">
                         Tidak ada data untuk ditampilkan.
                     </td>
                 </tr>
-                <% } else { %> <% borrowings.forEach(b => { %>
+                <% } else { %> <% borrowings.forEach(b => { %> <% 
+                    const dueDate = new Date(b.due_date);
+                    const returnDate = new Date(b.return_date);
+                    
+                    // Set time to 0 to compare dates only
+                    dueDate.setHours(0, 0, 0, 0);
+                    returnDate.setHours(0, 0, 0, 0);
+                    
+                    const diffTime = returnDate.getTime() - dueDate.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    let statusText = '';
+                    let statusColorClass = '';
+
+                    if (diffDays <= 0) {
+                        statusText = 'Tepat waktu';
+                        statusColorClass = 'text-green-700 font-bold';
+                    } else {
+                        statusText = `Terlambat ${diffDays} hari`;
+                        statusColorClass = 'text-red-700 font-bold';
+                    }
+                %>
                 <tr class="border-b">
                     <td class="py-2 px-4 font-medium">
                         <%= b.title %><br /><span class="text-xs text-gray-500"
@@ -76,6 +98,9 @@
                     <td class="py-2 px-4 text-green-600">
                         <%= new Date(b.return_date).toLocaleDateString('id-ID')
                         %>
+                    </td>
+                    <td class="py-2 px-4 <%= statusColorClass %>">
+                        <%= statusText %>
                     </td>
                 </tr>
                 <% }) %> <% } %>
