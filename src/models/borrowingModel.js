@@ -238,63 +238,6 @@ const Borrowing = {
         return rows;
     },
 
-    // findHistoryWithSearch: async (searchTerm) => {
-    //     let query = `
-    //         SELECT
-    //             br.id AS borrowing_id,
-    //             b.title,
-    //             b.author,
-    //             b.publisher,
-    //             u.username,
-    //             u.email,
-    //             c.name AS category_name,
-    //             br.borrow_date,
-    //             br.return_date,
-    //             br.due_date       
-    //         FROM borrowings br
-    //         JOIN users u ON br.user_id = u.id
-    //         JOIN books b ON br.book_id = b.id
-    //         LEFT JOIN categories c ON b.category_id = c.id
-    //         WHERE br.return_date IS NOT NULL 
-    //     `;
-    //     const params = [];
-
-    //     if (searchTerm) {
-    //         query += ` AND (`;
-            
-    //         // --- LOGIKA PENCARIAN ---
-    //         const searchConditions = [
-    //             `u.username LIKE ?`,
-    //             `u.email LIKE ?`,
-    //             `b.title LIKE ?`,
-    //             `b.author LIKE ?`,
-    //             `b.publisher LIKE ?`,
-    //             `c.name LIKE ?`,
-    //             // 👇 TAMBAHKAN BARIS INI (LOGIKA STATUS) 👇
-    //             `(CASE WHEN br.return_date > br.due_date THEN 'Terlambat' ELSE 'Tepat Waktu' END) LIKE ?`
-    //         ];
-            
-    //         const likeTerm = `%${searchTerm}%`;
-            
-    //         // Push params harus sesuai jumlah tanda tanya (?) di atas
-    //         // Karena kita nambah 1 kondisi di atas, kita harus push likeTerm 1 kali lagi
-    //         params.push(
-    //             likeTerm, // username
-    //             likeTerm, // email
-    //             likeTerm, // title
-    //             likeTerm, // author
-    //             likeTerm, // publisher
-    //             likeTerm, // category
-    //             likeTerm  // <--- UNTUK STATUS (Terlambat/Tepat Waktu)
-    //         );
-    //     }
-
-    //     query += `) ORDER BY br.return_date DESC`; // Tutup kurung query
-
-    //     const [rows] = await db.execute(query, params);
-    //     return rows;
-    // },
-
     processReturn: async (borrowingId) => {
         const connection = await db.getConnection();
         try {
