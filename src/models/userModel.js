@@ -42,6 +42,14 @@ const User = {
         return result.affectedRows;
     },
 
+    delete: async (id) => {
+        const [result] = await db.execute(
+            "DELETE FROM `users` WHERE `id` = ?",
+            [id]
+        );
+        return result.affectedRows;
+    },
+
     findAllMembersWithBorrowingStats: async (searchTerm) => {
         let query = `
             SELECT

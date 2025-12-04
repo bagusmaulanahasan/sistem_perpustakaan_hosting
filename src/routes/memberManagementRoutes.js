@@ -8,5 +8,6 @@ router.use(isLoggedIn, isAdmin);
 
 router.get("/members", adminController.showMemberList);
 router.post("/members/reset-password/:id", adminController.resetPassword);
+router.post("/members/delete/:id", adminController.deleteMember);
 
 module.exports = router;

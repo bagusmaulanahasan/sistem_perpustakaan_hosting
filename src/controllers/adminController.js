@@ -178,3 +178,14 @@ exports.resetPassword = async (req, res) => {
         res.status(500).send("Terjadi kesalahan saat mereset password");
     }
 };
+
+exports.deleteMember = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.delete(id);
+        res.redirect("/admin/members");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Terjadi kesalahan saat menghapus anggota");
+    }
+};
