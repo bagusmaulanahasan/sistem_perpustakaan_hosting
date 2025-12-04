@@ -70,6 +70,8 @@
 
                     let statusText = '';
                     let statusColorClass = '';
+                    let rowColorClass = '';
+
 
                     if (diffDays <= 0) {
                         statusText = 'Tepat waktu';
@@ -77,9 +79,10 @@
                     } else {
                         statusText = `Terlambat ${diffDays} hari`;
                         statusColorClass = 'text-red-700 font-bold';
+                        rowColorClass = 'bg-red-50';
                     }
                 %>
-                <tr class="border-b">
+                <tr class="border-b <%= rowColorClass %>">
                     <td class="py-2 px-4 font-medium">
                         <%= b.title %><br /><span class="text-xs text-gray-500"
                             ><%= b.author %></span
@@ -95,7 +98,7 @@
                         <%= new Date(b.borrow_date).toLocaleDateString('id-ID')
                         %>
                     </td>
-                    <td class="py-2 px-4 text-green-600">
+                    <td class="py-2 px-4 text-green-800">
                         <%= new Date(b.return_date).toLocaleDateString('id-ID')
                         %>
                     </td>
