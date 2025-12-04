@@ -9,6 +9,7 @@ const categoryRoutes = require("./src/routes/categoryRoutes");
 const bookRoutes = require("./src/routes/bookRoutes");
 const memberRoutes = require("./src/routes/memberRoutes");
 const adminRoutes = require("./src/routes/adminRoutes");
+const memberManagementRoutes = require("./src/routes/memberManagementRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,7 @@ app.use("/", authRoutes);
 app.use("/admin/books", bookRoutes);
 app.use("/", memberRoutes);
 app.use("/admin", adminRoutes);
+app.use("/admin", memberManagementRoutes);
 
 
 app.get("/", (req, res) => {

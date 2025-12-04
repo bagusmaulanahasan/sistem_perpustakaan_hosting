@@ -1,7 +1,9 @@
 const path = require("path");
 const ejs = require("ejs");
 const puppeteer = require("puppeteer");
+const bcrypt = require("bcryptjs");
 const Borrowing = require("../models/borrowingModel");
+const User = require("../models/userModel");
 
 exports.showBorrowedList = async (req, res) => {
     try {
@@ -145,5 +147,34 @@ exports.downloadActiveBorrowsPDF = async (req, res) => {
             error
         );
         res.status(500).send("Gagal membuat laporan PDF.");
+    }
+};
+
+exports.showMemberList = async (req, res) => {
+    try {
+        const searchTerm = req.query.search || "";
+        const members = await User.findAllMembersWithBorrowingStats(searchTerm);
+        res.render("admin/members/index", {
+            title: "Kelola Akun Anggota",
+            members,
+            searchTerm,
+            count: members.length,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Terjadi kesalahan pada server");
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash("pass123", salt);
+        await User.updatePassword(id, hashedPassword);
+        res.redirect("/admin/members");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Terjadi kesalahan saat mereset password");
     }
 };

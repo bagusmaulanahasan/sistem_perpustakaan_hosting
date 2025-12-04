@@ -1,0 +1,88 @@
+<div class="bg-white shadow-md rounded-lg p-4">
+    <div class="flex flex-col mb-4">
+        <h2 class="text-xl font-semibold">
+            <%= title %>
+        </h2>
+        <div class="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-md">
+            <p class="text-sm text-yellow-700">
+                Perhatikan, password yang direset akan memiliki password default yaitu <strong>pass123</strong>.
+            </p>
+        </div>
+        <form action="/admin/members" method="GET" class="mt-4">
+            <div class="flex">
+                <input type="text" name="search"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Cari data anggota..." value="<%= searchTerm || '' %>" />
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600">
+                    Cari
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mb-4 text-sm text-gray-600">
+        Menampilkan <strong>
+            <%= count %>
+        </strong> data Anggota.
+        <% if (searchTerm) { %>
+            <span>untuk kata kunci "<%= searchTerm %>"</span>
+            <a href="/admin/members" class="text-indigo-600 hover:underline ml-2">[Reset]</a>
+            <% } %>
+    </div>
+
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Username</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Email</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Buku Dipinjam</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Tepat Waktu</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Telat</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700">
+                <% if (members.length> 0) { %>
+                    <% members.forEach(member=> { %>
+                        <tr class="border-b hover:bg-gray-100">
+                            <td class="py-3 px-4 font-medium text-black">
+                                <%= member.username %>
+                            </td>
+                            <td class="py-3 px-4">
+                                <%= member.email %>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <% if (member.currently_borrowed===0) { %>
+                                    tidak ada
+                                    <% } else { %>
+                                        <%= member.currently_borrowed %>
+                                            <% } %>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <%= member.on_time_returns %>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <%= member.late_returns %>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <form action="/admin/members/reset-password/<%= member.id %>" method="POST"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin mereset password anggota ini?');">
+                                    <button type="submit"
+                                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm cursor-pointer">
+                                        Reset Pass
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" class="text-center py-4">Tidak ada anggota yang ditemukan.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
