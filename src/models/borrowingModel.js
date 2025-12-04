@@ -82,7 +82,7 @@ const Borrowing = {
         const { searchTerm } = options;
         let query = `
             SELECT b.title, b.author, b.publisher, c.name AS category_name,
-                   br.borrow_date, br.return_date
+                   br.borrow_date, br.return_date, br.due_date
             FROM borrowings br
             JOIN books b ON br.book_id = b.id
             LEFT JOIN categories c ON b.category_id = c.id
@@ -102,8 +102,10 @@ const Borrowing = {
                 `c.name LIKE ?`,
                 `MONTHNAME(br.borrow_date) LIKE ?`,
                 `MONTHNAME(br.return_date) LIKE ?`,
+                `(CASE WHEN br.return_date > br.due_date THEN 'Terlambat' ELSE 'Tepat Waktu' END) LIKE ?`
             ];
             params.push(
+                likeTerm,
                 likeTerm,
                 likeTerm,
                 likeTerm,
