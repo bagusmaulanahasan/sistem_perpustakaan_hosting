@@ -35,43 +35,47 @@
         <table class="min-w-full bg-white">
             <thead class="bg-gray-800 text-white">
                 <tr>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Username</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Email</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Buku Dipinjam</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Tepat Waktu</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Telat</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Aksi</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-start">Username</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-start">Email</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-center">Buku Dipinjam</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-center">Tepat Waktu</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-center">Telat</th>
+                    <th class="py-3 px-4 font-semibold text-sm text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody class="text-gray-700">
                 <% if (members.length> 0) { %>
                     <% members.forEach(member=> { %>
                         <tr class="border-b hover:bg-gray-100">
-                            <td class="py-3 px-4 font-medium text-black">
+                            <td class="py-2 px-4 font-medium text-black">
                                 <%= member.username %>
                             </td>
-                            <td class="py-3 px-4">
+                            <td class="py-2 px-4">
                                 <%= member.email %>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-4 text-center">
                                 <% if (member.currently_borrowed===0) { %>
                                     tidak ada
                                     <% } else { %>
                                         <%= member.currently_borrowed %>
                                             <% } %>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-4 text-center">
                                 <%= member.on_time_returns %>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-4 text-center">
                                 <%= member.late_returns %>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-4 text-center">
                                 <form action="/admin/members/reset-password/<%= member.id %>" method="POST"
                                     onsubmit="return confirm('Apakah Anda yakin ingin mereset password anggota ini?');">
-                                    <button type="submit"
+                                    <!-- <button type="submit"
                                         class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm cursor-pointer">
                                         Reset Pass
+                                    </button> -->
+                                    <button type="submit"
+                                        class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-1 rounded cursor-pointer">
+                                        Reset Password
                                     </button>
                                 </form>
                             </td>
