@@ -46,6 +46,9 @@
                 padding: 20px;
                 font-style: italic;
             }
+            /* Helper classes untuk warna teks status */
+            .text-red { color: #dc2626; font-weight: bold; }
+            .text-green { color: #16a34a; font-weight: bold; }
         </style>
     </head>
     <body>
@@ -61,34 +64,63 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>Nama Peminjam</th>
-                        <th>Judul Buku</th>
-                        <th>Tanggal Pinjam</th>
-                        <th>Tanggal Kembali</th>
-                    </tr>
+                        <th style="width: 5%">No.</th>
+                        <th style="width: 20%">Nama Peminjam</th>
+                        <th style="width: 30%">Judul Buku</th>
+                        <th style="width: 15%">Tanggal Pinjam</th>
+                        <th style="width: 15%">Tanggal Kembali</th>
+                        <th style="width: 15%">Status</th> </tr>
                 </thead>
                 <tbody>
-                    <% if(borrowings.length > 0) { %> <%
-                    borrowings.forEach((item, index) => { %>
+                    <% if(borrowings.length > 0) { %> 
+                    
+                    <% borrowings.forEach((item, index) => { %>
+                        <% 
+                            // --- LOGIKA PERHITUNGAN STATUS ---
+                            let statusText = '-';
+                            let statusClass = '';
+
+                            if (item.due_date && item.return_date) {
+                                const dueDate = new Date(item.due_date);
+                                const returnDate = new Date(item.return_date);
+                                
+                                // Reset jam agar hitungan murni tanggal
+                                dueDate.setHours(0, 0, 0, 0);
+                                returnDate.setHours(0, 0, 0, 0);
+                                
+                                const diffTime = returnDate.getTime() - dueDate.getTime();
+                                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                                if (diffDays <= 0) {
+                                    statusText = 'Tepat Waktu';
+                                    statusClass = 'text-green';
+                                } else {
+                                    statusText = `Terlambat ${diffDays} hari`;
+                                    statusClass = 'text-red';
+                                }
+                            }
+                        %>
                     <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= item.username %></td>
+                        <td style="text-align: center;"><%= index + 1 %></td>
+                        <td>
+                            <%= item.username %>
+                        </td>
                         <td><%= item.title %></td>
                         <td>
-                            <%= new
-                            Date(item.borrow_date).toLocaleDateString('id-ID')
-                            %>
+                            <%= new Date(item.borrow_date).toLocaleDateString('id-ID') %>
                         </td>
                         <td>
-                            <%= new
-                            Date(item.return_date).toLocaleDateString('id-ID')
-                            %>
+                            <%= new Date(item.return_date).toLocaleDateString('id-ID') %>
+                        </td>
+                        <td class="<%= statusClass %>">
+                            <%= statusText %>
                         </td>
                     </tr>
-                    <% }) %> <% } else { %>
+                    <% }) %> 
+                    
+                    <% } else { %>
                     <tr>
-                        <td colspan="5" class="no-data">
+                        <td colspan="6" class="no-data">
                             Tidak ada data riwayat peminjaman.
                         </td>
                     </tr>
